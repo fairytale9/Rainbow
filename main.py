@@ -119,7 +119,7 @@ if args.model is not None and not args.evaluate:
 
 else:
   mem = ReplayMemory(args, args.memory_capacity)
-  replay_buffer = replayBuffer(args.memory_capacity, args.batch_size, args.discount)
+  replay_buffer = replayBuffer(args, args.memory_capacity, args.batch_size, args.discount)
 
 priority_weight_increase = (1 - args.priority_weight) / (args.T_max - args.learn_start)
 
