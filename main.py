@@ -15,7 +15,7 @@ from agent import Agent
 from env import Env
 from memory import ReplayMemory
 from test import test
-
+from replaybuffer import replayBuffer
 
 # Note that hyperparameters may originally be reported in ATARI game frames instead of agent steps
 parser = argparse.ArgumentParser(description='Rainbow')
@@ -119,6 +119,7 @@ if args.model is not None and not args.evaluate:
 
 else:
   mem = ReplayMemory(args, args.memory_capacity)
+  replay_buffer = replayBuffer(args.memory_capacity, args.batch_size, args.discount)
 
 priority_weight_increase = (1 - args.priority_weight) / (args.T_max - args.learn_start)
 
@@ -155,13 +156,14 @@ else:
     if args.reward_clip > 0:
       reward = max(min(reward, args.reward_clip), -args.reward_clip)  # Clip rewards
     mem.append(state, action, reward, done)  # Append transition to memory
+    replay_buffer.collect(state, action, reward, done)
 
     # Train and test
     if T >= args.learn_start:
       mem.priority_weight = min(mem.priority_weight + priority_weight_increase, 1)  # Anneal importance sampling weight β to 1
 
       if T % args.replay_frequency == 0:
-        dqn.learn(mem)  # Train with n-step distributional double-Q learning
+        dqn.learn(mem, replay_buffer)  # Train with n-step distributional double-Q learning
 
       if T % args.evaluation_interval == 0:
         dqn.eval()  # Set DQN (online network) to evaluation mode
