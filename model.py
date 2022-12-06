@@ -80,9 +80,10 @@ class DQN(nn.Module):
     return q
 
   def forward_representation(self, x):
-    x = self.convs(x)
-    x = x.view(-1, self.conv_output_size)
-    representation_sa = self.fc_z_a(F.relu(self.fc_h_a(x)))
+    s, a = x
+    s = self.convs(s)
+    s = s.view(-1, self.conv_output_size)
+    representation_sa = self.fc_z_a(F.relu(self.fc_h_a(x)))[:, a, :]
     return representation_sa
     
   def reset_noise(self):
