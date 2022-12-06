@@ -13,19 +13,20 @@ import torch
 
 class replayBuffer():
   def __init__(self, args, capacity=int(1e6), batch_size=32, discount=1):
+    self.device = args.device
     self.capacity = capacity
     self.batch_size = batch_size
     self.discount = discount
     self.segments = {}
-    self.cum_reward = torch.zeros(0).to(device=args.device)
+    self.cum_reward = torch.zeros(0).to(device=self.device)
     self.traj = []
     self.traj_length = 0
   
   def collect(self, state, action, reward, done):
     self.traj.append((state, action))
     self.traj_length += 1
-    self.cum_reward = torch.cat((self.cum_reward, torch.Tensor([0])), 0).to(device=args.device)
-    reward_scaling = torch.tensor([self.discount ** (i - 1) for i in range(self.traj_length, 0, -1)], dtype=torch.float32).to(device=args.device)
+    self.cum_reward = torch.cat((self.cum_reward, torch.Tensor([0])), 0).to(device=self.device)
+    reward_scaling = torch.tensor([self.discount ** (i - 1) for i in range(self.traj_length, 0, -1)], dtype=torch.float32).to(device=self.device)
     self.cum_reward = self.cum_reward + reward * reward_scaling
     if done:
       self.cut_traj(self.traj, self.cum_reward)
@@ -40,7 +41,7 @@ class replayBuffer():
     self.empty()
   
   def empty(self):
-    self.cum_reward = torch.zeros(0).to(device=args.device)
+    self.cum_reward = torch.zeros(0).to(device=self.device)
     self.traj = []
     self.traj_length = 0
     
