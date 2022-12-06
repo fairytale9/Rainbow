@@ -12,7 +12,7 @@ import random
 import torch
 
 class replayBuffer():
-  def __init__(self, capacity=int(1e6), batch_size=32, discount=1):
+  def __init__(self, args, capacity=int(1e6), batch_size=32, discount=1):
     self.capacity = capacity
     self.batch_size = batch_size
     self.discount = discount
