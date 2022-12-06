@@ -85,7 +85,7 @@ class DQN(nn.Module):
     s = s.view(-1, self.conv_output_size)
     output = self.fc_z_a(F.relu(self.fc_h_a(x)))
     output = torch.squeeze(output)
-    representation_sa = [a, :]
+    representation_sa = output[a, :]
     return representation_sa
     
   def reset_noise(self):
