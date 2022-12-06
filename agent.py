@@ -3,6 +3,7 @@ from __future__ import division
 import os
 import numpy as np
 import torch
+from torch import nn
 from torch import optim
 from torch.nn.utils import clip_grad_norm_
 
