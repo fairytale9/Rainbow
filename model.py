@@ -79,6 +79,12 @@ class DQN(nn.Module):
       q = F.softmax(q, dim=2)  # Probabilities with action over second dimension
     return q
 
+  def forward_representation(self, x):
+    x = self.convs(x)
+    x = x.view(-1, self.conv_output_size)
+    representation_sa = self.fc_z_a(F.relu(self.fc_h_a(x)))
+    return representation_sa
+    
   def reset_noise(self):
     for name, module in self.named_children():
       if 'fc' in name:
