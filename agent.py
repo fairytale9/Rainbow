@@ -142,6 +142,6 @@ class Agent():
     return loss
 
   def _compute_logits(self, va, vb):
-    Wz = torch.matmul(self.W, vb.T)
+    Wz = torch.matmul(self.W, vb) # va, vb size [atoms], W size [W, W]
     logits = torch.matmul(va, Wz)
     return logits
