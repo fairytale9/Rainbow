@@ -101,7 +101,7 @@ class Agent():
     
     # Compute return based contrastive loss
     anchor_pair, pos_pair, neg_pair = replaybuffer.sample()
-    contrastive_loss = compute_contrastive_loss(anchor_pair, pos_pair, neg_pair, self.online_net)
+    contrastive_loss = self.compute_contrastive_loss(anchor_pair, pos_pair, neg_pair, self.online_net)
     contrastive_loss.backward()
     
     self.optimiser.step()
@@ -127,21 +127,21 @@ class Agent():
     self.online_net.eval()
     
   # Added functions for RCRL
-  def compute_contrastive_loss(anchor, pos, neg, net):
+  def compute_contrastive_loss(self, anchor, pos, neg, net):
     features = self.atoms
     batch_size = len(anchor)
     loss = 0
     for idx in batch_size:
       anchor_rep = net.forward_sa(anchor[idx]) # may have bugs, no batch size
       pos_rep = net.forward_sa(pos[idx])
-      pre_label = _compute_logits(anchor_rep, pos_rep, features)
+      pre_label = self._compute_logits(anchor_rep, pos_rep, features)
       loss = loss + (pre_label - 1) ** 2
       neg_rep = net.forward_sa(neg[idx])
-      pre_label = _compute_logits(anchor_rep, neg_rep, features)
+      pre_label = self._compute_logits(anchor_rep, neg_rep, features)
       loss = loss + (pre_label - 1) ** 2
     return loss
 
-  def _compute_logits(va, vb):
+  def _compute_logits(self, va, vb):
     Wz = torch.matmul(W, vb.T)
     logits = torch.matmul(va, Wz)
     return logits
