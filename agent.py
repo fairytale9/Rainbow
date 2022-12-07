@@ -134,10 +134,10 @@ class Agent():
     for idx in range(batch_size):
       anchor_rep = net.forward_representation(anchor[idx]) # may have bugs, no batch size
       pos_rep = net.forward_representation(pos[idx])
-      pre_label = self._compute_logits(anchor_rep, pos_rep, features)
+      pre_label = self._compute_logits(anchor_rep, pos_rep)
       loss = loss + (pre_label - 1) ** 2
       neg_rep = net.forward_representation(neg[idx])
-      pre_label = self._compute_logits(anchor_rep, neg_rep, features)
+      pre_label = self._compute_logits(anchor_rep, neg_rep)
       loss = loss + (pre_label - 1) ** 2
     return loss
 
