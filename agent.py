@@ -131,7 +131,7 @@ class Agent():
     features = self.atoms
     batch_size = len(anchor)
     loss = 0
-    for idx in batch_size:
+    for idx in range(batch_size):
       anchor_rep = net.forward_sa(anchor[idx]) # may have bugs, no batch size
       pos_rep = net.forward_sa(pos[idx])
       pre_label = self._compute_logits(anchor_rep, pos_rep, features)
@@ -142,6 +142,6 @@ class Agent():
     return loss
 
   def _compute_logits(self, va, vb):
-    Wz = torch.matmul(W, vb.T)
+    Wz = torch.matmul(self.W, vb.T)
     logits = torch.matmul(va, Wz)
     return logits
