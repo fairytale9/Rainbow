@@ -24,15 +24,15 @@ class replayBuffer():
     self.segment.append((state, action))
     if reward > 0:
       self.segments.append(self.segment)
-      self.segment.clear()
+      self.segment = []
     if done:
       if self.segment:
         self.segments.append(self.segment)
-        self.segment.clear()
+        self.segment = []
     
   def reset(self):
-    self.segments.clear()
-    self.segment.clear()
+    self.segments = []
+    self.segment = []
 
   def sample(self, batch_size=32):
     anchor_data = []
