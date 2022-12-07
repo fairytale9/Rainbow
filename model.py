@@ -83,7 +83,7 @@ class DQN(nn.Module):
     s, a = x
     s = self.convs(s)
     s = s.view(-1, self.conv_output_size)
-    output = self.fc_z_a(F.relu(self.fc_h_a(x)))
+    output = self.fc_z_a(F.relu(self.fc_h_a(s)))
     output = torch.squeeze(output)
     representation_sa = output[a, :]
     return representation_sa
