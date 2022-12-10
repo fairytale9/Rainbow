@@ -14,6 +14,7 @@ class Agent():
   def __init__(self, args, env):
     self.action_space = env.action_space()
     self.atoms = args.atoms
+    self.device = args.device
     self.Vmin = args.V_min
     self.Vmax = args.V_max
     self.support = torch.linspace(args.V_min, args.V_max, self.atoms).to(device=args.device)  # Support (range) of z
@@ -96,14 +97,16 @@ class Agent():
       m.view(-1).index_add_(0, (u + offset).view(-1), (pns_a * (b - l.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
 
     loss = -torch.sum(m * log_ps_a, 1)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
-    self.online_net.zero_grad()
-    (weights * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
-    clip_grad_norm_(self.online_net.parameters(), self.norm_clip)  # Clip gradients by L2 norm
     
     # Compute return based contrastive loss
     anchor_data, pos_data, neg_data = replaybuffer.sample()
     contrastive_loss = self.compute_contrastive_loss(anchor_data, pos_data, neg_data, self.online_net)
-    contrastive_loss.backward()
+    
+    rcrl_loss = loss + contrastive_loss
+    
+    self.online_net.zero_grad()
+    (weights * rcrl_loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
+    clip_grad_norm_(self.online_net.parameters(), self.norm_clip)  # Clip gradients by L2 norm
     
     self.optimiser.step()
 
@@ -137,7 +140,9 @@ class Agent():
     pos_logits = pos_logits.unsqueeze(1)
     neg_logits = neg_logits.unsqueeze(1)
     logits = torch.cat((pos_logits, neg_logits), 1)
-    labels = torch.zeros(self.batch_size).long()
+    logits = logits - torch.max(logits, 1)[0][:, None]
+    logits = logits * 0.1
+    labels = torch.zeros(self.batch_size).long().to(device=self.device)
     loss = self.cross_entropy_loss(logits, labels)
     return loss
 
@@ -152,8 +157,8 @@ class Agent():
   def _construct_batched_data(self, dict_data):
     s = dict_data['s']
     a = dict_data['a']
-    batch_s = torch.cat(s, 0)
-    batch_a = torch.cat(a, 0)
+    batch_s = torch.cat(s, 0).to(device=self.device)
+    batch_a = torch.cat(a, 0).to(device=self.device)
     return batch_s, batch_a
     
     
